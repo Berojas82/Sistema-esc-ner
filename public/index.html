@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Acceso a Evento</title>
+  <meta name="description" content="Sistema de control de acceso a evento.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
+</head>
+
+<body>
+  <!-- Overlay móvil para cerrar sidebar -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="app-wrapper">
+    <!-- ─── Barra Lateral (Sidebar) ────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">🎫</div>
+        <div>
+          <div class="logo-text">CONTROL ACCESO</div>
+          <div class="logo-sub">Sistema de acceso</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-label">Operación</div>
+        <a href="#escaner" class="nav-item active" data-page="page-escaner" id="nav-escaner">
+          <span class="nav-icon">📷</span>
+          <span>Escaneo / Ingreso</span>
+        </a>
+        <a href="#dashboard" class="nav-item" data-page="page-dashboard" id="nav-dashboard">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+
+        <div class="nav-label">Administración</div>
+        <a href="#asistentes" class="nav-item" data-page="page-asistentes" id="nav-asistentes">
+          <span class="nav-icon">👥</span>
+          <span>Asistentes</span>
+          <span class="nav-badge" id="badgeTotalAsistentes">0</span>
+        </a>
+        <a href="#reportes" class="nav-item" data-page="page-reportes" id="nav-reportes">
+          <span class="nav-icon">📄</span>
+          <span>Reportes</span>
+        </a>
+        <a href="#configuracion" class="nav-item" data-page="page-configuracion" id="nav-configuracion">
+          <span class="nav-icon">⚙️</span>
+          <span>Configuración</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="event-info-card">
+          <div class="event-name" id="sidebarEventName">Cargando evento...</div>
+          <div id="sidebarEventDate">--/--/----</div>
+          <div style="margin-top: 6px; display: flex; align-items: center; gap: 6px;">
+            <div class="status-dot"></div>
+            <span class="status-label" id="scannerStatusText">Lector listo</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ─── Contenido Principal ───────────────────────────────────── -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar">
+        <button class="hamburger-btn" id="btnToggleSidebar" aria-label="Abrir menú">☰</button>
+        <div class="topbar-title" id="pageTitle">Control de Ingreso</div>
+        <div class="topbar-actions">
+          <button class="btn btn-secondary btn-sm" id="btnAudioToggle" title="Activar/Silenciar sonido de escaneo">
+            <span id="audioIcon">🔊</span> <span id="audioText">Sonido</span>
+          </button>
+          <div class="live-clock" id="liveClock">00:00:00</div>
+        </div>
+      </header>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           PÁGINA 1: ESCANEO / INGRESO
+      ══════════════════════════════════════════════════════════════ -->
+      <section class="page active" id="page-escaner">
+        <div class="scanner-container">
+
+          <!-- Campo de captura para el Lector USB NewPrint X1 -->
+          <div class="scanner-input-wrapper">
+            <label for="scannerInput" class="scanner-input-label">
+              ⚡ Escáner de Cédula PDF417 Activo (Lector NewPrint X1)
+            </label>
+            <input type="text" id="scannerInput" class="scanner-input"
+              placeholder="Pasa el lector sobre la cédula o digita el documento..." autocomplete="off" autofocus>
+            <span class="scanner-input-icon">⚡</span>
+          </div>
+
+          <div class="scanner-hint">
+            <span class="hint-icon">💡</span>
+            <span>El lector USB <strong>NewPrint X1</strong> funciona como emulador de teclado. Mantén el cursor en el
+              campo o haz clic en cualquier parte para enfocar.</span>
+          </div>
+
+          <!-- Tarjeta de Resultado del Escaneo -->
+          <div class="scan-result" id="scanResult">
+            <div class="result-header">
+              <div class="result-icon" id="resultIcon">✓</div>
+              <div>
+                <div class="result-status" id="resultStatus">ACCESO PERMITIDO</div>
+                <div class="result-subtitle" id="resultSubtitle">Registro confirmado en la base de datos</div>
+              </div>
+            </div>
+
+            <!-- Detalles de la Persona -->
+            <div class="result-details">
+              <div class="detail-item">
+                <div class="detail-label">Documento de Identidad</div>
+                <div class="detail-value doc-number" id="resDocumento">--</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Tipo de Documento</div>
+                <div class="detail-value" id="resTipoDoc">CC</div>
+              </div>
+              <div class="detail-item" style="grid-column: 1 / -1;">
+                <div class="detail-label">Nombres Completos</div>
+                <div class="detail-value" id="resNombres" style="font-size: 18px; color: #fff;">--</div>
+              </div>
+              <div class="detail-item" style="grid-column: 1 / -1;">
+                <div class="detail-label">Apellidos Completos</div>
+                <div class="detail-value" id="resApellidos" style="font-size: 18px; color: #fff;">--</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Hora de Ingreso</div>
+                <div class="detail-value text-mono text-success" id="resHora">--</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Método</div>
+                <div class="detail-value" id="resMetodo">Lector USB X1</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Búsqueda Manual / Auxiliar -->
+          <div class="card" style="margin-top: 24px;">
+            <div class="card-header">
+              <span class="card-title">🔍 Búsqueda Manual por Documento</span>
+              <span class="text-muted text-small">En caso de deterioro del código de barras</span>
+            </div>
+            <form id="formManualSearch" class="manual-search">
+              <input type="text" id="manualDocInput" placeholder="Número de cédula sin puntos..." pattern="[0-9]*">
+              <button type="submit" class="btn btn-primary">Verificar e Ingresar</button>
+            </form>
+          </div>
+
+          <!-- Mini Resumen de Turno -->
+          <div class="grid-3" style="margin-top: 24px;">
+            <div class="stat-card success">
+              <div class="stat-value" id="miniIngresados">0</div>
+              <div class="stat-label">Ingresados</div>
+            </div>
+            <div class="stat-card warning">
+              <div class="stat-value" id="miniPendientes">0</div>
+              <div class="stat-label">Pendientes</div>
+            </div>
+            <div class="stat-card primary">
+              <div class="stat-value" id="miniPorcentaje">0%</div>
+              <div class="stat-label">Asistencia</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           PÁGINA 2: DASHBOARD
+      ══════════════════════════════════════════════════════════════ -->
+      <section class="page" id="page-dashboard">
+        <!-- Tarjetas Estadísticas Principales -->
+        <div class="stats-grid">
+          <div class="stat-card primary">
+            <span class="stat-icon">👥</span>
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-label">Total Registrados</div>
+          </div>
+          <div class="stat-card success">
+            <span class="stat-icon">✅</span>
+            <div class="stat-value" id="statIngresados">0</div>
+            <div class="stat-label">Personas Ingresadas</div>
+          </div>
+          <div class="stat-card warning">
+            <span class="stat-icon">⏳</span>
+            <div class="stat-value" id="statPendientes">0</div>
+            <div class="stat-label">Pendientes por Ingresar</div>
+          </div>
+          <div class="stat-card info">
+            <span class="stat-icon">📈</span>
+            <div class="stat-value" id="statPorcentaje">0%</div>
+            <div class="stat-label">% de Aforo Cumplido</div>
+          </div>
+        </div>
+
+        <!-- Barra de Progreso Global -->
+        <div class="progress-bar-wrapper">
+          <div class="progress-header">
+            <span class="progress-title">Avance de Ingreso al Evento</span>
+            <span class="progress-pct" id="dashProgresoPct">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="dashProgresoFill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Grid 2 Columnas: Por Categorías y Flujo Reciente -->
+        <div class="grid-2">
+          <!-- Desglose por Tipo de Documento -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📋 Asistencia por Tipo de Documento</span>
+              <button class="btn btn-secondary btn-sm" id="btnRefrescarDash">Actualizar</button>
+            </div>
+            <div class="chart-bar-container" id="tipoDocBars">
+              <div class="text-muted" style="text-align: center; padding: 20px;">Cargando tipos de documento...</div>
+            </div>
+          </div>
+
+          <!-- Últimos Ingresos en Vivo -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">⏱️ Últimos Ingresos Registrados</span>
+              <span class="status-pill ingresado">En vivo</span>
+            </div>
+            <div class="recent-list" id="recentEntriesList">
+              <div class="text-muted" style="text-align: center; padding: 20px;">No hay ingresos recientes.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           PÁGINA 3: ASISTENTES (BASE DE DATOS)
+      ══════════════════════════════════════════════════════════════ -->
+      <section class="page" id="page-asistentes">
+        <!-- Barra de Herramientas y Filtros -->
+        <div class="filters-bar">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="filtroBuscar" placeholder="Buscar por cédula, nombre o apellido...">
+          </div>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <select id="filtroEstado" style="width: auto;">
+              <option value="">Todos los Estados</option>
+              <option value="registrado">Solo Ingresados</option>
+              <option value="pendiente">Solo Pendientes</option>
+            </select>
+
+
+
+            <button class="btn btn-primary" id="btnModalNuevoAsistente">
+              ➕ Nuevo Asistente
+            </button>
+            <button class="btn btn-secondary" id="btnModalImportar">
+              📥 Importar Excel / CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabla de Asistentes -->
+        <div class="card" style="padding: 0; overflow: hidden;">
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Estado</th>
+                  <th>Tipo</th>
+                  <th>Documento</th>
+                  <th>Nombres</th>
+                  <th>Apellidos</th>
+                  <th>Hora Ingreso</th>
+                  <th style="text-align: right;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tablaAsistentesBody">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    Cargando lista de asistentes...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Paginación -->
+        <div class="pagination" id="paginacionContainer"></div>
+      </section>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           PÁGINA 4: REPORTES
+      ══════════════════════════════════════════════════════════════ -->
+      <section class="page" id="page-reportes">
+        <div class="grid-2">
+          <!-- Reporte en Excel -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📗 Descargar Reporte en Excel (.XLSX)</span>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">
+              Genera un archivo de Excel profesional que incluye:
+            </p>
+            <ul style="color: var(--text-muted); margin-left: 20px; margin-bottom: 24px; line-height: 1.8;">
+              <li><strong>Hoja 1:</strong> Base completa de asistentes con estado y hora de ingreso.</li>
+              <li><strong>Hoja 2:</strong> Registro cronológico de ingresos con método (Escáner/Manual).</li>
+              <li><strong>Hoja 3:</strong> Resumen ejecutivo de aforo y porcentajes.</li>
+            </ul>
+            <a href="/api/reporte" class="btn btn-success btn-lg" style="width: 100%;" download>
+              📥 Descargar Reporte Excel Completo
+            </a>
+          </div>
+
+          <!-- Reporte en CSV -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">📄 Descargar Reporte en CSV</span>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">
+              Formato ligero compatible con cualquier hoja de cálculo o sistema externo. Incluye codificación UTF-8 para
+              visualización correcta de tildes y eñes.
+            </p>
+            <div style="height: 52px;"></div>
+            <a href="/api/reporte/csv" class="btn btn-secondary btn-lg" style="width: 100%;" download>
+              📥 Descargar Datos en CSV
+            </a>
+          </div>
+        </div>
+
+        <!-- Plantilla de Asistentes para próximos eventos -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-header">
+            <span class="card-title">📋 Plantilla de Base de Datos para Carga Masiva</span>
+          </div>
+          <p style="color: var(--text-secondary); margin-bottom: 16px;">
+            Si deseas preparar la base de datos de tu evento en Excel, descarga esta plantilla prediseñada con las
+            columnas exactas que lee el sistema:
+          </p>
+          <div class="d-flex align-center gap-2 flex-wrap">
+            <a href="/api/plantilla" class="btn btn-primary" download>
+              ⬇️ Descargar Plantilla Oficial (.XLSX)
+            </a>
+            <span class="text-muted text-small">Columnas: Documento, Nombres, Apellidos, Tipo_Documento</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           PÁGINA 5: CONFIGURACIÓN
+      ══════════════════════════════════════════════════════════════ -->
+      <section class="page" id="page-configuracion">
+        <div class="grid-2">
+          <!-- Configuración del Evento -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">⚙️ Parámetros del Evento</span>
+            </div>
+            <form id="formConfigEvento">
+              <div class="input-group">
+                <label for="cfgNombreEvento">Nombre del Evento</label>
+                <input type="text" id="cfgNombreEvento" required>
+              </div>
+              <div class="input-group">
+                <label for="cfgFechaEvento">Fecha del Evento</label>
+                <input type="date" id="cfgFechaEvento" required>
+              </div>
+              <div class="input-group">
+                <label for="cfgLugarEvento">Lugar / Sede</label>
+                <input type="text" id="cfgLugarEvento" placeholder="Ej: Auditorio Principal">
+              </div>
+              <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
+                Guardar Configuración
+              </button>
+            </form>
+          </div>
+
+          <!-- Acciones Peligrosas / Mantenimiento -->
+          <div class="card" style="border-color: rgba(231,76,60,0.3);">
+            <div class="card-header">
+              <span class="card-title" style="color: #e74c3c;">⚠️ Mantenimiento y Reinicio</span>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 16px;">
+              Reinicia el estado de todos los asistentes a <strong>Pendiente</strong> y vacía el registro cronológico
+              para iniciar un nuevo día o evento.
+            </p>
+            <div
+              style="background: rgba(231,76,60,0.08); border-left: 3px solid #e74c3c; padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 12.5px; color: #e8a097;">
+              Esta acción conservará la lista de asistentes pero borrará las horas y marcas de ingreso realizadas.
+            </div>
+            <button class="btn btn-danger" id="btnReiniciarTodo">
+              🔄 Reiniciar Todos los Ingresos a Cero
+            </button>
+          </div>
+        </div>
+
+        <!-- Instrucciones de Conexión en Red Local -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-header">
+            <span class="card-title">🌐 Uso en Red Local (Computador y Celulares)</span>
+          </div>
+          <p style="color: var(--text-secondary); line-height: 1.8;">
+            Para usar este software en teléfonos y otros computadores conectados a la misma red Wi-Fi o red local:
+          </p>
+          <ol style="color: var(--text-muted); margin-left: 20px; line-height: 2;">
+            <li>Mantén el computador principal con este servidor ejecutándose.</li>
+            <li>En tu celular o tablet conectada a la misma red Wi-Fi, abre el navegador (Chrome, Safari, Edge).</li>
+            <li>Ingresa la dirección IP de tu computador mostrada en la consola, por ejemplo: <code
+                class="text-mono text-success" id="localIpHint">http://192.168.x.x:3000</code>.</li>
+            <li>¡Listo! El celular verá en tiempo real el dashboard y los ingresos en vivo que realiza el lector USB.
+            </li>
+          </ol>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       MODAL: AGREGAR ASISTENTE
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="modalNuevoAsistente">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">➕ Registrar Nuevo Asistente</div>
+        <button class="modal-close" data-close="modalNuevoAsistente">✕</button>
+      </div>
+      <form id="formNuevoAsistente">
+        <div class="input-group">
+          <label for="newDocumento">Documento de Identidad *</label>
+          <input type="text" id="newDocumento" required placeholder="Ej: 1020304050" pattern="[0-9]*">
+        </div>
+        <div class="input-group">
+          <label for="newNombres">Nombres *</label>
+          <input type="text" id="newNombres" required placeholder="Ej: CARLOS ANDRÉS">
+        </div>
+        <div class="input-group">
+          <label for="newApellidos">Apellidos *</label>
+          <input type="text" id="newApellidos" required placeholder="Ej: PÉREZ GÓMEZ">
+        </div>
+        <div class="input-group">
+          <label for="newTipoDoc">Tipo Documento</label>
+          <select id="newTipoDoc">
+            <option value="CC">Cédula Ciudadanía (CC)</option>
+            <option value="TI">Tarjeta Identidad (TI)</option>
+            <option value="CE">Cédula Extranjería (CE)</option>
+            <option value="PAS">Pasaporte (PAS)</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" data-close="modalNuevoAsistente">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Asistente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       MODAL: IMPORTAR EXCEL / CSV
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="modalImportar">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">📥 Carga Masiva desde Excel o CSV</div>
+        <button class="modal-close" data-close="modalImportar">✕</button>
+      </div>
+      <form id="formImportar" enctype="multipart/form-data">
+        <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 13px;">
+          Selecciona tu archivo de Excel (.xlsx, .xls) o CSV con la lista de asistentes. El sistema detectará
+          automáticamente las columnas de Documento, Nombres y Apellidos.
+        </p>
+
+        <div
+          style="border: 2px dashed var(--border-active); border-radius: var(--radius-md); padding: 30px; text-align: center; margin-bottom: 20px; background: rgba(0,146,65,0.03);">
+          <input type="file" id="archivoImportar" accept=".xlsx, .xls, .csv" required style="display: none;">
+          <label for="archivoImportar" style="cursor: pointer; display: block;">
+            <div style="font-size: 38px; margin-bottom: 10px;">📄</div>
+            <div style="font-weight: 600; color: var(--ses-turquesa); margin-bottom: 4px;" id="archivoLabel">
+              Haz clic para seleccionar el archivo
+            </div>
+            <div class="text-muted text-small">Formatos soportados: Excel (.xlsx, .xls) o CSV</div>
+          </label>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <a href="/api/plantilla" class="text-small text-success" download style="text-decoration: underline;">
+            💡 Descargar archivo de ejemplo / plantilla aquí
+          </a>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" data-close="modalImportar">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="btnSubirArchivo">Comenzar Importación</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Contenedor para notificaciones Toast -->
+  <div id="toast-container"></div>
+
+  <!-- Script Principal -->
+  <script src="js/app.js"></script>
+</body>
+
+</html>
