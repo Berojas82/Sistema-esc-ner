@@ -1,6 +1,5 @@
 # Sistema-esc-ner
 Sistema de acceso a eventos mediante escaneo de código de barras con un lector de documento de identidad colombiano siguiendo el estándar 2d PDF417.
-
 Software moderno para el control de ingreso a eventos con escaneo de documentos de identidad colombianos (código 2D PDF417), base de datos en tiempo real, dashboard de aforo y generación de reportes en Excel/CSV.
 
 ---
