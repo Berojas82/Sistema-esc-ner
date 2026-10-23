@@ -7,5 +7,8 @@ echo   Lector USB NewPrint X1 - Codigo PDF417
 echo ========================================================
 echo.
 cd /d "%~dp0"
+echo Verificando version de Node.js...
+node -v
+echo.
 node server.js
 pause
